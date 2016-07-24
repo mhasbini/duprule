@@ -68,6 +68,15 @@ sub new {
 			}
 			return \@rule_ref;
 		},
+	'T' => sub {
+            my @rule_ref = @{ shift; };
+            my $pos = &to_pos( $rule_ref[1] );
+            splice( @rule_ref, 0, 2 );
+			my $case = $this->{status}->{pos}{$pos}->{case};
+			$this->{status}->{pos}{$pos}->{case} = $case eq 'd' ? 'b' : $case eq 'b' ? 'd' : $case eq 'l' ? 'u' : 'l';
+            return \@rule_ref;
+        },
+
 	};
 	return $this;
 }
@@ -87,5 +96,11 @@ sub proccess {
 	$self->{status} = undef;
 	return $return;
 };
+
+sub to_pos {
+    my $pos = $_[0];
+    if ( $pos =~ /\d/ ) { return $pos; }
+    return 10 + ord($pos) - 65;
+}
 
 1;
