@@ -31,39 +31,45 @@ sub new {
 	'l' => sub {
             my @rule_ref = @{ shift; };
             splice( @rule_ref, 0, 1 );
-			$this->{status}->{pos}{$_}->{case} = 'l' for 0 .. MAGIC;
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$_}->{case} = 'l' for 0 .. $largest_key;
 			return \@rule_ref;
 		},
 	'u' => sub {
             my @rule_ref = @{ shift; };
             splice( @rule_ref, 0, 1 );
-			$this->{status}->{pos}{$_}->{case} = 'u' for 0 .. MAGIC;
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$_}->{case} = 'u' for 0 .. $largest_key;
 			return \@rule_ref;
 		},
 	'c' => sub {
             my @rule_ref = @{ shift; };
             splice( @rule_ref, 0, 1 );
 			$this->{status}->{pos}{0}->{case} = 'u';
-			$this->{status}->{pos}{$_}->{case} = 'l' for 1 .. MAGIC;
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$_}->{case} = 'l' for 1 .. $largest_key;
 			return \@rule_ref;
 		},
 	'C' => sub {
             my @rule_ref = @{ shift; };
             splice( @rule_ref, 0, 1 );
 			$this->{status}->{pos}{0}->{case} = 'l';
-			$this->{status}->{pos}{$_}->{case} = 'u' for 1 .. MAGIC;
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$_}->{case} = 'u' for 1 .. $largest_key;
 			return \@rule_ref;
 		},
 	'r' => sub {
             my @rule_ref = @{ shift; };
             splice( @rule_ref, 0, 1 );
-			$this->{status}->{pos}{$_}->{pos} = MAGIC - $this->{status}->{pos}{$_}->{pos} for 0 .. MAGIC;
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$_}->{pos} = $largest_key - $this->{status}->{pos}{$_}->{pos} for 0 .. $largest_key;
 			return \@rule_ref;
 		},
 	't' => sub {
             my @rule_ref = @{ shift; };
             splice( @rule_ref, 0, 1 );
-			for (0 .. MAGIC) {
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			for (0 .. $largest_key) {
 				my $case = $this->{status}->{pos}{$_}->{case};
 				$this->{status}->{pos}{$_}->{case} = $case eq 'd' ? 'b' : $case eq 'b' ? 'd' : $case eq 'l' ? 'u' : 'l';
 			}
@@ -82,6 +88,7 @@ sub new {
             splice( @rule_ref, 0, 1 );
 			my $largest_key = &largest_key( $this->{status}->{pos} );
 			$this->{status}->{pos}{$largest_key + 1 + $_} = dclone $this->{status}->{pos}{$_} for 0 .. $largest_key;
+			$this->{status}->{pos}{$largest_key + 1 + $_}->{pos} = $this->{status}->{pos}{$largest_key + 1 + $_}->{pos} + $largest_key + 1 for 0 .. $largest_key;
             return \@rule_ref;
         },
 	'p' => sub {
@@ -103,6 +110,24 @@ sub new {
 			$this->{status}->{pos}{$largest_key + 1 + $_}->{pos} = $largest_key - $this->{status}->{pos}{$_}->{pos} + $largest_key + 1 for 0 .. $largest_key;
             return \@rule_ref;
         },
+	'{' => sub {
+            my @rule_ref = @{ shift; };
+            splice( @rule_ref, 0, 1 );
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			for	(0 .. $largest_key)	{
+				$this->{status}->{pos}{$_}->{pos} = $this->{status}->{pos}{$_}->{pos} == 0 ? $largest_key : $this->{status}->{pos}{$_}->{pos} - 1; 
+			}
+            return \@rule_ref;
+        },
+	'}' => sub {
+            my @rule_ref = @{ shift; };
+            splice( @rule_ref, 0, 1 );
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			for	(0 .. $largest_key)	{
+				$this->{status}->{pos}{$_}->{pos} = $this->{status}->{pos}{$_}->{pos} == $largest_key ? 0 : $this->{status}->{pos}{$_}->{pos} + 1; 
+			}
+            return \@rule_ref;
+        },
 
 	};
 	return $this;
@@ -111,6 +136,7 @@ sub new {
 sub proccess {
 	my $self = shift;
 	my $rule = shift;
+	# initialize
 	$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. MAGIC;
 	$self->{status}->{pos}{$_}->{pos} = $_ for 0 .. MAGIC;
 	my $rule_ref = [ split '', $rule ];
