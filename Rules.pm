@@ -129,6 +129,30 @@ sub new {
 			}
             return \@rule_ref;
         },
+	'$' => sub {
+            my @rule_ref = @{ shift; };
+			my $char = $rule_ref[1];
+            splice( @rule_ref, 0, 2 );
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$largest_key + 1}->{value} = $char;
+			$this->{status}->{pos}{$largest_key + 1}->{pos} = $largest_key + 1;
+			$this->{status}->{pos}{$largest_key + 1}->{case} = 'd';
+            return \@rule_ref;
+        },
+	'^' => sub {
+            my @rule_ref = @{ shift; };
+			my $char = $rule_ref[1];
+            splice( @rule_ref, 0, 2 );
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			for (0 .. $largest_key)	{
+				$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
+				$this->{status}->{pos}{$_ + 1}->{pos} = $this->{status}->{pos}{$_}->{pos} + 1;
+			}
+			$this->{status}->{pos}{0}->{value} = $char;
+			$this->{status}->{pos}{0}->{pos} = 0;
+			$this->{status}->{pos}{0}->{case} = 'd';
+            return \@rule_ref;
+        },
 
 	};
 	return $this;
@@ -140,6 +164,7 @@ sub proccess {
 	# initialize
 	$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. MAGIC;
 	$self->{status}->{pos}{$_}->{pos} = $_ for 0 .. MAGIC;
+	$self->{status}->{pos}{$_}->{value} = '' for 0 .. MAGIC;
 	# finish initialization
 	my $rule_ref = [ split '', $rule ];
 	while (1) {
