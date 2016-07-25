@@ -94,6 +94,15 @@ sub new {
 			}
             return \@rule_ref;
         },
+	'f' => sub {
+            my @rule_ref = @{ shift; };
+            splice( @rule_ref, 0, 1 );
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$largest_key + 1 + $_} = dclone $this->{status}->{pos}{$_} for 0 .. $largest_key; # clone data
+			# reverse positions
+			$this->{status}->{pos}{$largest_key + 1 + $_}->{pos} = $largest_key - $this->{status}->{pos}{$_}->{pos} + $largest_key + 1 for 0 .. $largest_key;
+            return \@rule_ref;
+        },
 
 	};
 	return $this;
