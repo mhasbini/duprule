@@ -98,6 +98,7 @@ sub new {
 			for (0 .. $n) {
 				my $largest_key = &largest_key( $this->{status}->{pos} );
 				$this->{status}->{pos}{$largest_key + 1 + $_} = dclone $this->{status}->{pos}{$_} for 0 .. $largest_key;
+				$this->{status}->{pos}{$largest_key + 1 + $_}->{pos} = $this->{status}->{pos}{$largest_key + 1 + $_}->{pos} + $largest_key + 1 for 0 .. $largest_key;
 			}
             return \@rule_ref;
         },
@@ -139,6 +140,7 @@ sub proccess {
 	# initialize
 	$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. MAGIC;
 	$self->{status}->{pos}{$_}->{pos} = $_ for 0 .. MAGIC;
+	# finish initialization
 	my $rule_ref = [ split '', $rule ];
 	while (1) {
 		last if !@{$rule_ref}[0];
