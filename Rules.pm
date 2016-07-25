@@ -5,8 +5,9 @@ use warnings;
 use vars qw($VERSION);
 use constant MAGIC => 3; # TODO: 52
 use Data::Dumper;
+use Storable 'dclone';
 $VERSION = '0.01';
-
+$Data::Dumper::Sortkeys = 1;
 
 sub new {
     my $class = shift;
@@ -76,6 +77,23 @@ sub new {
 			$this->{status}->{pos}{$pos}->{case} = $case eq 'd' ? 'b' : $case eq 'b' ? 'd' : $case eq 'l' ? 'u' : 'l';
             return \@rule_ref;
         },
+	'd' => sub {
+            my @rule_ref = @{ shift; };
+            splice( @rule_ref, 0, 1 );
+			my $largest_key = &largest_key( $this->{status}->{pos} );
+			$this->{status}->{pos}{$largest_key + 1 + $_} = dclone $this->{status}->{pos}{$_} for 0 .. $largest_key;
+            return \@rule_ref;
+        },
+	'p' => sub {
+            my @rule_ref = @{ shift; };
+			my $n = &to_pos( $rule_ref[1] );
+            splice( @rule_ref, 0, 2 );
+			for (0 .. $n) {
+				my $largest_key = &largest_key( $this->{status}->{pos} );
+				$this->{status}->{pos}{$largest_key + 1 + $_} = dclone $this->{status}->{pos}{$_} for 0 .. $largest_key;
+			}
+            return \@rule_ref;
+        },
 
 	};
 	return $this;
@@ -101,6 +119,16 @@ sub to_pos {
     my $pos = $_[0];
     if ( $pos =~ /\d/ ) { return $pos; }
     return 10 + ord($pos) - 65;
+}
+
+sub largest_key {
+    my $hash   = shift;
+    my @keys = keys %$hash;
+	my $max = $keys[0];
+    for (1 .. $#keys) {
+		$max = $keys[$_] if $keys[$_] > $max;
+    }
+    return $max;
 }
 
 1;

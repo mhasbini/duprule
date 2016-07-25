@@ -13,7 +13,9 @@ my $engine = Rules->new(verbose => 0);
 # is_deeply($engine->proccess('lt'), $engine->proccess('u'), 'Duplicate');
 # is_deeply($engine->proccess('tt'), $engine->proccess(':'), 'Duplicate');
 # is_deeply($engine->proccess('crt'), $engine->proccess('Ctl'), 'Duplicate');
-my @pairs = (['cl', 'l'], ['cu', 'u'], ['C', 'uC'], ['rr', ':'], ['r', 'rrr'], ['lt', 'u'], ['tt', ':'], ['crt', 'cccrrrttt'], ['T1T1T2', ':T2']);
+my @pairs = (	['cl', 'l'], ['cu', 'u'], ['C', 'uC'], ['rr', ':'], ['r', 'rrr'], ['lt', 'u'], ['tt', ':'],
+				['crt', 'cccrrrttt'], ['T1T1T2', ':T2'], ['p0', 'd'], ['ld', 'lp0'], ['dd', 'p1']
+			);
 my @result;
 foreach my $pair (@pairs)
 {
