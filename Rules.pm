@@ -3,7 +3,7 @@ package Rules;
 use strict;
 use warnings;
 use vars qw($VERSION);
-use constant MAGIC => 3; # TODO: 52
+use constant MAGIC => 52; # TODO: 52
 use Data::Dumper;
 use Storable 'dclone';
 use Utils;
@@ -199,22 +199,22 @@ sub new {
 			}
 			return \@rule_ref;
 		},
-	'x' => sub {
-			my @rule_ref = @{ shift; };
-			my $n = &to_pos( $rule_ref[1] );
-			my $m = &to_pos( $rule_ref[2] );
-			splice( @rule_ref, 0, 3 );
-			my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			delete $this->{status}->{pos}{$_} for $m + $n .. $largest_pos; # delete element after $m
-			delete $this->{status}->{pos}{$_} for 0 .. $n - 1; # delete element before $n
-			# backward positions by $n
-			for ($n .. $n + $m - 1) {
-				if(exists($this->{status}->{pos}{$_})) {
-					$this->{status}->{pos}{$_ - $n} = delete $this->{status}->{pos}{$_};
-				}
-			}
-			return \@rule_ref;
-		},
+	# 'x' => sub {
+			# my @rule_ref = @{ shift; };
+			# my $n = &to_pos( $rule_ref[1] );
+			# my $m = &to_pos( $rule_ref[2] );
+			# splice( @rule_ref, 0, 3 );
+			# my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			# delete $this->{status}->{pos}{$_} for $m + $n .. $largest_pos; # delete element after $m
+			# delete $this->{status}->{pos}{$_} for 0 .. $n - 1; # delete element before $n
+			## backward positions by $n
+			# for ($n .. $n + $m - 1) {
+				# if(exists($this->{status}->{pos}{$_})) {
+					# $this->{status}->{pos}{$_ - $n} = delete $this->{status}->{pos}{$_};
+				# }
+			# }
+			# return \@rule_ref;
+		# },
 	'O' => sub {
 			my @rule_ref = @{ shift; };
 			my $n = &to_pos( $rule_ref[1] );
@@ -261,14 +261,14 @@ sub new {
 			}
 			return \@rule_ref;
 		},
-	"'" => sub {
-			my @rule_ref = @{ shift; };
-			my $n = &to_pos( $rule_ref[1] );
-			splice( @rule_ref, 0, 2 );
-			my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			delete $this->{status}->{pos}{$_} for $n .. $largest_pos; # delete range $n -> last
-			return \@rule_ref;
-		},
+	# "'" => sub {
+			# my @rule_ref = @{ shift; };
+			# my $n = &to_pos( $rule_ref[1] );
+			# splice( @rule_ref, 0, 2 );
+			# my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			# delete $this->{status}->{pos}{$_} for $n .. $largest_pos; # delete range $n -> last
+			# return \@rule_ref;
+		# },
 	's' => sub {
 			my @rule_ref = @{ shift; };
 			my $char = $rule_ref[1];
