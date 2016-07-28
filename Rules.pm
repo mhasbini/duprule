@@ -517,14 +517,4 @@ sub largest_pos {
 	return $max;
 }
 
-sub smallest_key {
-	my $hash   = shift;
-	my @keys = keys %$hash;
-	my $min = $keys[0];
-	for (1 .. $#keys) {
-		$min = $keys[$_] if $keys[$_] < $min;
-	}
-	return $min;
-}
-
 1;
