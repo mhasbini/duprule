@@ -3,7 +3,7 @@ package Rules;
 use strict;
 use warnings;
 use vars qw($VERSION);
-use constant MAGIC => 52; # TODO: 52
+use constant MAGIC => 2; # TODO: 52
 use Data::Dumper;
 use Storable 'dclone';
 use Utils;
@@ -125,6 +125,7 @@ sub new {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
 			my $temp = dclone $this->{status}->{pos}{0};
 			for (1 .. $largest_pos) {
 				$this->{status}->{pos}{$_ - 1} = delete $this->{status}->{pos}{$_};
@@ -136,6 +137,7 @@ sub new {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
 			my $temp = dclone $this->{status}->{pos}{$largest_pos};
 			for (reverse 0 .. $largest_pos - 1) {
 				$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
@@ -432,6 +434,7 @@ sub new {
 			my $n = &to_pos( $rule_ref[1] );
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
 			# forward all positions by $n
 			for (reverse 0 .. $largest_pos) {
 				$this->{status}->{pos}{$_ + $n} = delete $this->{status}->{pos}{$_};
@@ -446,6 +449,7 @@ sub new {
 			my $n = &to_pos( $rule_ref[1] );
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
 			for (reverse $largest_pos - $n + 1 .. $largest_pos) {
 				$this->{status}->{pos}{$_ + $n} = dclone $this->{status}->{pos}{$_};
 			}
