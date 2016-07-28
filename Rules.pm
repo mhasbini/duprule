@@ -42,6 +42,7 @@ sub new {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
 			$this->{status}->{pos}{$_}->{case} = 'u' for 0 .. $largest_pos;
 			return \@rule_ref;
 		},
@@ -57,10 +58,14 @@ sub new {
 	'C' => sub {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
-			$this->{status}->{pos}{0}->{case} = 'l';
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
-			$this->{status}->{pos}{$_}->{case} = 'u' for 1 .. $largest_pos;
+			$this->{status}->{pos}{0}->{case} = 'l';
+			for (1 .. $largest_pos) {
+				if(exists($this->{status}->{pos}{$_})) {
+					$this->{status}->{pos}{$_}->{case} = 'u';
+				}
+			}
 			return \@rule_ref;
 		},
 	'r' => sub {
@@ -146,7 +151,9 @@ sub new {
 			return \@rule_ref if $largest_pos == -1;
 			my $temp = dclone $this->{status}->{pos}{$largest_pos};
 			for (reverse 0 .. $largest_pos - 1) {
-				$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
+				if(exists($this->{status}->{pos}{$_})) {
+					$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
+				}
 			}
 			$this->{status}->{pos}{0} = dclone $temp;
 			return \@rule_ref;
@@ -448,7 +455,7 @@ sub new {
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
 			if(exists($this->{status}->{pos}{$n}) && exists($this->{status}->{pos}{$n + 1})) {
-				$this->{status}->{pos}{$n} = dclone $this->{status}->{pos}{$n + 1} if $n < $largest_pos;
+				$this->{status}->{pos}{$n} = dclone $this->{status}->{pos}{$n + 1};
 			}
 			return \@rule_ref;
 		},
@@ -468,12 +475,17 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
+			return \@rule_ref if $n > $largest_pos + 1;
 			# forward all positions by $n
 			for (reverse 0 .. $largest_pos) {
-				$this->{status}->{pos}{$_ + $n} = delete $this->{status}->{pos}{$_};
+				if(exists($this->{status}->{pos}{$_})) {
+					$this->{status}->{pos}{$_ + $n} = delete $this->{status}->{pos}{$_};
+				}
 			}
 			for (0 .. $n - 1) {
-				$this->{status}->{pos}{$_} = dclone $this->{status}->{pos}{$_ + $n}
+				if(exists($this->{status}->{pos}{$_ + $n})) {
+					$this->{status}->{pos}{$_} = dclone $this->{status}->{pos}{$_ + $n};
+				}
 			}
 			return \@rule_ref;
 		},
@@ -483,8 +495,11 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
+			return \@rule_ref if $n > $largest_pos + 1;
 			for (reverse $largest_pos - $n + 1 .. $largest_pos) {
-				$this->{status}->{pos}{$_ + $n} = dclone $this->{status}->{pos}{$_};
+				if(exists($this->{status}->{pos}{$_})) {
+					$this->{status}->{pos}{$_ + $n} = dclone $this->{status}->{pos}{$_};
+				}
 			}
 			return \@rule_ref;
 		},
