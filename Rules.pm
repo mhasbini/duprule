@@ -1,9 +1,10 @@
 # (c) mhasbini 2016
 package Rules;
 use strict;
-use warnings;
+# use warnings;
+use warnings FATAL => 'all';
 use vars qw($VERSION);
-use constant MAGIC => 2; # TODO: 52
+use constant MAGIC => 52; # TODO: 52
 use Data::Dumper;
 use Storable 'dclone';
 use Utils;
