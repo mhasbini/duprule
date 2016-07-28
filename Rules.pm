@@ -47,8 +47,9 @@ sub new {
 	'c' => sub {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
-			$this->{status}->{pos}{0}->{case} = 'u';
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
+			$this->{status}->{pos}{0}->{case} = 'u';
 			$this->{status}->{pos}{$_}->{case} = 'l' for 1 .. $largest_pos;
 			return \@rule_ref;
 		},
@@ -64,6 +65,7 @@ sub new {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
 			my $temp;
 			for (0 .. $largest_pos) {
 				$temp->{status}->{pos}{$_} = dclone $this->{status}->{pos}{$largest_pos - $_};
