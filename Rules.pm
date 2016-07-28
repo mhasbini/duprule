@@ -447,7 +447,9 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
-			$this->{status}->{pos}{$n} = dclone $this->{status}->{pos}{$n + 1} if $n < $largest_pos;
+			if(exists($this->{status}->{pos}{$n}) && exists($this->{status}->{pos}{$n + 1})) {
+				$this->{status}->{pos}{$n} = dclone $this->{status}->{pos}{$n + 1} if $n < $largest_pos;
+			}
 			return \@rule_ref;
 		},
 	',' => sub {
@@ -455,7 +457,9 @@ sub new {
 			my $n = &to_pos( $rule_ref[1] );
 			splice( @rule_ref, 0, 2 );
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
-			$this->{status}->{pos}{$n} = dclone $this->{status}->{pos}{$n - 1} if $n > 0;
+			if(exists($this->{status}->{pos}{$n}) && exists($this->{status}->{pos}{$n - 1})) {
+				$this->{status}->{pos}{$n} = dclone $this->{status}->{pos}{$n - 1};
+			}
 			return \@rule_ref;
 		},
 	'y' => sub {
