@@ -7,6 +7,7 @@ use constant MAGIC => 52; # TODO: 52
 use Data::Dumper;
 use Storable 'dclone';
 use Utils;
+
 $VERSION = '0.01';
 $Data::Dumper::Sortkeys = 1;
 
@@ -67,7 +68,7 @@ sub new {
 			for (0 .. $largest_pos) {
 				$temp->{status}->{pos}{$_} = dclone $this->{status}->{pos}{$largest_pos - $_};
 			}
-			$this->{status} = dclone $temp->{status};
+			$this->{status}->{pos} = dclone $temp->{status}->{pos};
 			return \@rule_ref;
 		},
 	't' => sub {
@@ -148,7 +149,7 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			$this->{status}->{pos}{$largest_pos + 1}->{value} = $char;
-			$this->{status}->{pos}{$largest_pos + 1}->{element} = ++$this->{last_element};
+			$this->{status}->{pos}{$largest_pos + 1}->{element} = -1;
 			$this->{status}->{pos}{$largest_pos + 1}->{case} = 'd';
 			$this->{status}->{pos}{$largest_pos + 1}->{bitwize_shift} = 0;
 			$this->{status}->{pos}{$largest_pos + 1}->{ascii_shift} = 0;
@@ -163,7 +164,7 @@ sub new {
 				$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
 			}
 			$this->{status}->{pos}{0}->{value} = $char;
-			$this->{status}->{pos}{0}->{element} = ++$this->{last_element};
+			$this->{status}->{pos}{0}->{element} = -1;
 			$this->{status}->{pos}{0}->{case} = 'd';
 			$this->{status}->{pos}{0}->{bitwize_shift} = 0;
 			$this->{status}->{pos}{0}->{ascii_shift} = 0;
@@ -199,22 +200,22 @@ sub new {
 			}
 			return \@rule_ref;
 		},
-	# 'x' => sub {
-			# my @rule_ref = @{ shift; };
-			# my $n = &to_pos( $rule_ref[1] );
-			# my $m = &to_pos( $rule_ref[2] );
-			# splice( @rule_ref, 0, 3 );
-			# my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			# delete $this->{status}->{pos}{$_} for $m + $n .. $largest_pos; # delete element after $m
-			# delete $this->{status}->{pos}{$_} for 0 .. $n - 1; # delete element before $n
-			## backward positions by $n
-			# for ($n .. $n + $m - 1) {
-				# if(exists($this->{status}->{pos}{$_})) {
-					# $this->{status}->{pos}{$_ - $n} = delete $this->{status}->{pos}{$_};
-				# }
-			# }
-			# return \@rule_ref;
-		# },
+	'x' => sub {
+			my @rule_ref = @{ shift; };
+			my $n = &to_pos( $rule_ref[1] );
+			my $m = &to_pos( $rule_ref[2] );
+			splice( @rule_ref, 0, 3 );
+			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			delete $this->{status}->{pos}{$_} for $m + $n .. $largest_pos; # delete element after $m
+			delete $this->{status}->{pos}{$_} for 0 .. $n - 1; # delete element before $n
+			# backward positions by $n
+			for ($n .. $n + $m - 1) {
+				if(exists($this->{status}->{pos}{$_})) {
+					$this->{status}->{pos}{$_ - $n} = delete $this->{status}->{pos}{$_};
+				}
+			}
+			return \@rule_ref;
+		},
 	'O' => sub {
 			my @rule_ref = @{ shift; };
 			my $n = &to_pos( $rule_ref[1] );
@@ -238,9 +239,9 @@ sub new {
  			for (reverse $n .. $largest_pos) {
 				$this->{status}->{pos}{$_ + 1} = delete $this->{status}->{pos}{$_};
 			}
-			if($n < $largest_pos) {
+			if($n <= $largest_pos) {
 				$this->{status}->{pos}{$n}->{value} = $char;
-				$this->{status}->{pos}{$n}->{element} = ++$this->{last_element};
+				$this->{status}->{pos}{$n}->{element} = -1;
 				$this->{status}->{pos}{$n}->{case} = 'd';
 				$this->{status}->{pos}{$n}->{bitwize_shift} = 0;
 				$this->{status}->{pos}{$n}->{ascii_shift} = 0;
@@ -254,33 +255,34 @@ sub new {
 			splice( @rule_ref, 0, 3 );
 			if(exists($this->{status}->{pos}{$n})) {
 				$this->{status}->{pos}{$n}->{value} = $char;
-				$this->{status}->{pos}{$n}->{element} = ++$this->{last_element};
+				$this->{status}->{pos}{$n}->{element} = -1;
 				$this->{status}->{pos}{$n}->{case} = 'd';
 				$this->{status}->{pos}{$n}->{bitwize_shift} = 0;
 				$this->{status}->{pos}{$n}->{ascii_shift} = 0;
 			}
 			return \@rule_ref;
 		},
-	# "'" => sub {
-			# my @rule_ref = @{ shift; };
-			# my $n = &to_pos( $rule_ref[1] );
-			# splice( @rule_ref, 0, 2 );
-			# my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			# delete $this->{status}->{pos}{$_} for $n .. $largest_pos; # delete range $n -> last
-			# return \@rule_ref;
-		# },
+	"'" => sub {
+			my @rule_ref = @{ shift; };
+			my $n = &to_pos( $rule_ref[1] );
+			splice( @rule_ref, 0, 2 );
+			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			delete $this->{status}->{pos}{$_} for $n .. $largest_pos; # delete range $n -> last
+			return \@rule_ref;
+		},
 	's' => sub {
 			my @rule_ref = @{ shift; };
 			my $char = $rule_ref[1];
 			my $replaced_char = $rule_ref[2];
 			splice( @rule_ref, 0, 3 );
+			return \@rule_ref if $char eq $replaced_char; # change nothing if trying to replace character by itself
 			$this->{status}->{substitution}{$char} = $replaced_char;
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			for (0 .. $largest_pos) {
 				if(exists($this->{status}->{pos}{$_})) {
 					if ($this->{status}->{pos}{$_}->{value} eq $char) {
 						$this->{status}->{pos}{$_}->{value} = $replaced_char;
-						$this->{status}->{pos}{$_}->{element} = ++$this->{last_element};
+						$this->{status}->{pos}{$_}->{element} = -1;
 						$this->{status}->{pos}{$_}->{case} = 'd';
 						$this->{status}->{pos}{$_}->{bitwize_shift} = 0;
 						$this->{status}->{pos}{$_}->{ascii_shift} = 0;
@@ -457,33 +459,38 @@ sub new {
 sub proccess {
 	my $self = shift;
 	my $rule = shift;
-	# initialize
-	$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. MAGIC;
-	$self->{status}->{pos}{$_}->{element} = $_ + 1 for 0 .. MAGIC;
-	$self->{status}->{pos}{$_}->{value} = '' for 0 .. MAGIC;
-	$self->{status}->{pos}{$_}->{bitwize_shift} = 0 for 0 .. MAGIC; # left -> + | right -> -
-	$self->{status}->{pos}{$_}->{ascii_shift} = 0 for 0 .. MAGIC;
-	# $self->{status}->{substitution};
-	$self->{last_element} = MAGIC + 1; # used when inserting new elements to keep counting.
-	# finish initialization
-	my $rule_ref = [ split '', $rule ];
-	my $not_supported_rule = 0;
-	while (1) {
-		last if !@{$rule_ref}[0];
-		if(!exists($self->{rules}->{ @{$rule_ref}[0] })) {
-			$not_supported_rule = 1;
-			last;
+	my @return;
+	my $not_supported_rule;
+	my $i = 0;
+	foreach my $magic (0 .. MAGIC) {
+		# initialize
+		$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. $magic;
+		$self->{status}->{pos}{$_}->{element} = $_ + 1 for 0 .. $magic;
+		$self->{status}->{pos}{$_}->{value} = '' for 0 .. $magic;
+		$self->{status}->{pos}{$_}->{bitwize_shift} = 0 for 0 .. $magic; # left -> + | right -> -
+		$self->{status}->{pos}{$_}->{ascii_shift} = 0 for 0 .. $magic;
+		# $self->{status}->{substitution};
+		$self->{last_element} = $magic + 1; # used when inserting new elements to keep counting.
+		# finish initialization
+		my $rule_ref = [ split '', $rule ];
+		$not_supported_rule = 0;
+		while (1) {
+			last if !@{$rule_ref}[0];
+			if(!exists($self->{rules}->{ @{$rule_ref}[0] })) {
+				$not_supported_rule = 1;
+				last;
+			}
+			print "Executing @{$rule_ref}[0]: \n" if $self->{verbose};
+			$rule_ref =	$self->{rules}->{ @{$rule_ref}[0] }->( $rule_ref );
+			print Dumper $self->{status} if $self->{verbose};
 		}
-		print "Executing @{$rule_ref}[0]: \n" if $self->{verbose};
-		$rule_ref =	$self->{rules}->{ @{$rule_ref}[0] }->( $rule_ref );
-		print Dumper $self->{status} if $self->{verbose};
+		$return[$i++] = $self->{status};
+		$self->{status} = undef;
 	}
-	my $return = $self->{status};
-	$self->{status} = undef;
 	if($not_supported_rule == 1) {
 		return "RULE_IS_NOT_SUPPORTED";
 	} else {
-		return $return;
+		return \@return;
 	}
 };
 

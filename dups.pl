@@ -8,6 +8,3 @@ foreach my $rule (@ARGV)
 	my $return = $engine->proccess($rule);
 	print Dumper $return;
 }
-
-# my $return = $engine->proccess(':');
-# print Dumper $return;
