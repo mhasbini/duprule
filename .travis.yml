@@ -1,36 +1,28 @@
 language: perl
+
 perl:
-  - "5.6.2"       # ancient
-  - "5.8.8"       # common, prebuilt version
-  - "5.8.8-thr"   # various build flags
-  - "5.8.8-mb"
-  - "5.8.8-dbg"
-  - "5.8.8@moo"   # with local::lib
-  - "5.17"        # older dev version
-  - "5.17.11"     # will never be prebuilt
-  - "5.18"        # existing perl version
-  - 5.20          # work around lack of quoting
-  - dev
-matrix:
-  include:
-    - perl: "blead"
-      env: VERBOSE=1
-before_install:
-  - source ./init
-  - build-perl
-  - perl -V
-install: []
+- '5.20'
+- '5.18'
+- '5.16'
+- '5.14'
+- '5.12'
+- '5.10'
+- '5.8'
+
+install:
+- cpanm --quiet --notest
+  Devel::Cover::Report::Coveralls
+  YAML::Pegex
+
 script:
-  - prove -v
-  - cpan-install git://github.com/travis-perl/TravisCI-Helpers-InstallerTest.git
-  - perl -MTravisCI::Helpers::InstallerTest=master
-  - cpan-install git://github.com/travis-perl/TravisCI-Helpers-InstallerTest.git@another-branch
-  - perl -MTravisCI::Helpers::InstallerTest=another-branch
-  - cpan-install Test::Spelling
-  - which aspell
+- PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
+  prove -lv t/
+- cover
+
+after_success:
+- cover -report coveralls
+
+# Hack to not run on tag pushes:
 branches:
   except:
-    - /^wip\//
-    - /^blocked/
-notifications:
-  email: false
+  - /^v?[0-9]+\.[0-9]+/
