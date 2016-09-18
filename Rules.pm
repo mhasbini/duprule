@@ -4,7 +4,7 @@ use strict;
 # use warnings;
 use warnings FATAL => 'all';
 use vars qw($VERSION);
-use constant MAGIC => 52; # TODO: 52
+use constant 'MAGIC' => 53; # TODO: 52
 use Data::Dumper;
 use Storable 'dclone';
 use Utils;
@@ -301,6 +301,7 @@ sub new {
 			my $replaced_char = $rule_ref[2];
 			splice( @rule_ref, 0, 3 );
 			return \@rule_ref if $char eq $replaced_char; # change nothing if trying to replace character by itself
+			return \@rule_ref if defined $this->{status}->{substitution}{$char} && $this->{status}->{substitution}{$char} eq ''; # if a character was deleted before, it shouldn't be replaced because it doesn't exists.
 			$this->{status}->{substitution}{$char} = $replaced_char;
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
@@ -317,6 +318,37 @@ sub new {
 			}
 			return \@rule_ref;
 		},
+		'@' => sub {
+				my @rule_ref = @{ shift; };
+				my $char = $rule_ref[1];
+				splice( @rule_ref, 0, 2 );
+				# replace $char with '' ( blank )
+				my $replaced_char = '';
+				# if a character is replaced by $char, it should be replace by ''
+				if(defined $this->{status}->{substitution}) {
+					my $tmp = dclone $this->{status}->{substitution};
+				 	while (my ($key, $replaced_by) = each %{$tmp}) {
+						if($replaced_by eq $char) {
+							$this->{status}->{substitution}{$key} = $replaced_char;
+						}
+					}
+				}
+				$this->{status}->{substitution}{$char} = $replaced_char;
+				my $largest_pos = &largest_pos( $this->{status}->{pos} );
+				return \@rule_ref if $largest_pos == -1;
+				for (0 .. $largest_pos) {
+					if(exists($this->{status}->{pos}{$_})) {
+						if ($this->{status}->{pos}{$_}->{value} eq $char) {
+							$this->{status}->{pos}{$_}->{value} = $replaced_char;
+							$this->{status}->{pos}{$_}->{element} = -1;
+							$this->{status}->{pos}{$_}->{case} = 'd';
+							$this->{status}->{pos}{$_}->{bitwize_shift} = 0;
+							$this->{status}->{pos}{$_}->{ascii_shift} = 0;
+						}
+					}
+				}
+				return \@rule_ref;
+	},
 	'z' => sub {
 			my @rule_ref = @{ shift; };
 			my $n = &to_pos( $rule_ref[1] );
@@ -360,7 +392,7 @@ sub new {
 			}
 			return \@rule_ref;
 		},
-	
+
 	# Specific
 	'k' => sub {
 			my @rule_ref = @{ shift; };
@@ -503,7 +535,7 @@ sub new {
 			}
 			return \@rule_ref;
 		},
-	
+
 	};
 	return $this;
 }
@@ -556,8 +588,8 @@ sub largest_pos {
 	my $hash   = shift;
 	my @keys = keys %$hash;
 	my $max = -1;
-	for (0 .. $#keys) {
-		$max = $keys[$_] if $keys[$_] > $max;
+	foreach my $key (0 .. $#keys) {
+		$max = $keys[$key] if $keys[$key] > $max;
 	}
 	return $max;
 }

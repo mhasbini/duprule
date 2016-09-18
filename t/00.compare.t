@@ -4,7 +4,7 @@ use lib "$FindBin::Bin/../";
 
 require_ok Utils;
 
-my $util = Utils->new(); 
+my $util = Utils->new();
 my $VAR1 = [{'pos' => {'0' => {'ascii_shift' => 0, 'bitwize_shift' => 0, 'case' => 'd', 'element' => 1, 'value' => ''}},'substitution' => {'a' => 'b', 'c' => 'd'}},
 			{'pos' => {'0' => {'ascii_shift' => 0, 'bitwize_shift' => 0, 'case' => 'd', 'element' => 1, 'value' => ''},
 					   '1' => {'ascii_shift' => 0, 'bitwize_shift' => 0, 'case' => 'd', 'element' => -1, 'value' => 'a'}}}
