@@ -9,12 +9,5 @@ perl:
   - "5.10"
 
 sudo: false
-install:
-  - cpan-install --deps       # installs prereqs, including recommends
-  - cpan-install --coverage   # installs converage prereqs, if enabled
-before_script:
-  - coverage-setup
 script:
   - prove -l -j$(test-jobs) $(test-files)   # parallel testing
-after_success:
-  - coverage-report
