@@ -336,14 +336,21 @@ sub new {
 				$this->{status}->{substitution}{$char} = $replaced_char;
 				my $largest_pos = &largest_pos( $this->{status}->{pos} );
 				return \@rule_ref if $largest_pos == -1;
-				for (0 .. $largest_pos) {
-					if(exists($this->{status}->{pos}{$_})) {
-						if ($this->{status}->{pos}{$_}->{value} eq $char) {
-							$this->{status}->{pos}{$_}->{value} = $replaced_char;
-							$this->{status}->{pos}{$_}->{element} = -1;
-							$this->{status}->{pos}{$_}->{case} = 'd';
-							$this->{status}->{pos}{$_}->{bitwize_shift} = 0;
-							$this->{status}->{pos}{$_}->{ascii_shift} = 0;
+				# for (0 .. $largest_pos) {
+				# 	if(exists($this->{status}->{pos}{$_})) {
+				# 		if ($this->{status}->{pos}{$_}->{value} eq $char) {
+				# 			$this->{status}->{pos}{$_}->{value} = $replaced_char;
+				# 			$this->{status}->{pos}{$_}->{element} = -1;
+				# 			$this->{status}->{pos}{$_}->{case} = 'd';
+				# 			$this->{status}->{pos}{$_}->{bitwize_shift} = 0;
+				# 			$this->{status}->{pos}{$_}->{ascii_shift} = 0;
+				# 		}
+				# 	}
+				# }
+				foreach my $pos (0 .. $largest_pos) {
+					if(exists($this->{status}->{pos}{$pos}) && $this->{status}->{pos}{$pos}->{value} eq $char) {
+						for ($pos + 1 .. $largest_pos) {
+							$this->{status}->{pos}{$_ - 1} = delete $this->{status}->{pos}{$_};
 						}
 					}
 				}
