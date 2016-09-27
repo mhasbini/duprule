@@ -543,8 +543,10 @@ sub proccess {
 	my $rule = shift;
 	my @return;
 	my $not_supported_rule;
+	my $rule_functions_count;
 	my $i = 0;
 	foreach my $magic (0 .. MAGIC) {
+		$rule_functions_count = 0;
 		# initialize
 		$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. $magic;
 		$self->{status}->{pos}{$_}->{element} = $_ + 1 for 0 .. $magic;
@@ -564,6 +566,7 @@ sub proccess {
 			}
 			print "Executing @{$rule_ref}[0]: \n" if $self->{verbose};
 			$rule_ref =	$self->{rules}->{ @{$rule_ref}[0] }->( $rule_ref );
+			$rule_functions_count++;
 			print Dumper $self->{status} if $self->{verbose};
 		}
 		$return[$i++] = $self->{status};
@@ -572,7 +575,7 @@ sub proccess {
 	if($not_supported_rule == 1) {
 		return "RULE_IS_NOT_SUPPORTED";
 	} else {
-		return \@return;
+		return wantarray() ? (\@return, $rule_functions_count) : \@return;
 	}
 };
 
