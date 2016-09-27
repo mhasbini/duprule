@@ -257,12 +257,14 @@ sub new {
 			my $char = $rule_ref[2];
 			splice( @rule_ref, 0, 3 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			return \@rule_ref if $largest_pos == -1;
+			if ($largest_pos == -1 || $n > $largest_pos + 1) {
+				return \@rule_ref;
+			}
 			# forwarding positions by 1
  			for (reverse $n .. $largest_pos) {
 				$this->{status}->{pos}{$_ + 1} = delete $this->{status}->{pos}{$_};
 			}
-			if($n <= $largest_pos) {
+			if($n <= $largest_pos + 1) {
 				$this->{status}->{pos}{$n}->{value} = $char;
 				$this->{status}->{pos}{$n}->{element} = -1;
 				$this->{status}->{pos}{$n}->{case} = 'd';
