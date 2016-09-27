@@ -11,7 +11,8 @@ sub new {
 	my %parm  = @_;
 	my $this  = {};
 	bless $this, $class;
-	$this->{engine} = Rules->new();
+	$this->{magic} = $parm{magic} || 36; # 0-9 + A-Z + 1
+	$this->{engine} = Rules->new(magic => $this->{magic});
 	$this->{util} = Utils->new();
 	$this->{verbose} = $parm{verbose} || 0;
 	return $this;

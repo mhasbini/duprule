@@ -4,7 +4,6 @@ use strict;
 # use warnings;
 use warnings FATAL => 'all';
 use vars qw($VERSION);
-use constant 'MAGIC' => 53; # TODO: 52
 use Data::Dumper;
 use Storable 'dclone';
 use Utils;
@@ -18,6 +17,7 @@ sub new {
 	my $this  = {};
 	bless $this, $class;
 	$this->{verbose} = $parm{verbose} || 0;
+	$this->{magic} = $parm{magic} || 36; # 0-9 + A-Z + 1
 	# $this->{element}{0} = {}
 	$this->{rules} = {
 	# General
@@ -545,7 +545,7 @@ sub proccess {
 	my $not_supported_rule;
 	my $rule_functions_count;
 	my $i = 0;
-	foreach my $magic (0 .. MAGIC) {
+	foreach my $magic (0 .. $self->{magic}) {
 		$rule_functions_count = 0;
 		# initialize
 		$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. $magic;
