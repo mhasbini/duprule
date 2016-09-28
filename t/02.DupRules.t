@@ -9,7 +9,7 @@ my $DupRules = DupRules->new();
 my @cases = ({'in' => [], 'out' => [], 'dups' => []},
              {'in' => ['u', 'lllll', 'll'], 'out' => ['u', 'll'], 'dups' => [['ll', 'lllll']]},
              {'in' => ['lllll', 'lllll'], 'out' => ['lllll'], 'dups' => []}, # identical rules, so 'dups is empty'
-             {'in' => ['u', 'lu', 'l', 'll', ':'], 'out' => ['u', 'l', ':'], 'dups' => [['u', 'lu'], ['l', 'll']]}
+             {'in' => ['u', 'lu', 'l', 'll', 'lll', ':'], 'out' => ['u', 'l', ':'], 'dups' => [['u', 'lu'], ['l', 'll', 'lll']]}
             );
 
 foreach my $case (@cases) {
