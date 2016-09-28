@@ -257,9 +257,7 @@ sub new {
 			my $char = $rule_ref[2];
 			splice( @rule_ref, 0, 3 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			if ($largest_pos == -1 || $n > $largest_pos + 1) {
-				return \@rule_ref;
-			}
+			return \@rule_ref if $largest_pos == -1;
 			# forwarding positions by 1
  			for (reverse $n .. $largest_pos) {
 				$this->{status}->{pos}{$_ + 1} = delete $this->{status}->{pos}{$_};

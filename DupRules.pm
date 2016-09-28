@@ -33,11 +33,14 @@ sub duprule {
 
 	my %reverse;
 	my @return;
+	my @duplicate;
+	my @all_duplicates;
 
 	while( my( $rule, $value ) = each %results ){
 		push @{$reverse{$value->{'hash'}}}, [$rule, $value->{'fcount'}];
 	}
 
+	undef %results; # free memory
 	foreach my $hash (keys %reverse) {
 		if(scalar(@{$reverse{$hash}}) > 1) { # if more then 1 rule have same hash
 			my @context = @{$reverse{$hash}};
@@ -51,7 +54,10 @@ sub duprule {
 					$fcount_min = $value[1];
 					$fcount_min_index = $i;
 				}
+				push @duplicate, $context[$i][0];
 			}
+			push @all_duplicates, [@duplicate];
+			undef @duplicate;
 			push @return, $context[$fcount_min_index][0];
 			# print $context[$fcount_min_index][0], "\n";
 		}else{
@@ -60,7 +66,7 @@ sub duprule {
 		}
 	}
 
-	return \@return;
+	return wantarray() ? (\@return, \@all_duplicates) : \@return;
 }
 
 1;
