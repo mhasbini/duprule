@@ -11,6 +11,14 @@ while (my $rule = <STDIN>) {
 
 my $DupRules = DupRules->new();
 
-foreach my $rule (@{$DupRules->duprule(\@rules)}) {
+my ($uniq, $duplicates) = $DupRules->duprule(\@rules);
+
+open my $out, '>', 'duplicates.txt';
+foreach my $dup (@{$duplicates}) {
+	print $out join(', ', @{$dup}), "\n";
+}
+close $out;
+
+foreach my $rule (@{$uniq}) {
 	print $rule, "\n";
 }
