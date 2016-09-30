@@ -18,7 +18,7 @@ The mechanism is like this:
 
 # Which rules are supported ?
 
-Currently all rules on this page are supported except: 
+Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_based_attack) are supported except: 
 
     - Memory rules: X, 4, 6, M
     - Reject plains rules
