@@ -4,7 +4,25 @@
 
 # How does it works ?
 
-Each rule change is mapped, and a uniq id is generated for each rule with functions count.
+TL;DR: Each rule change is mapped, and a unique id is generated for each rule with functions count.
+
+The mechanism is like this:
+
+- A blank map is created with $n ( from 1 to 37 ) default characters.
+- Each rule change will be applied to the map.
+    Example rule: 'u', will change all characters cases from '?' ( unknown ) to 'u' ( upper case ).
+    'sab', will add {'a' -> 'b'} to the map. And same logic apply for the other rules.
+- An id is generated from the map.
+- The ids are compared to detect duplicate rules.
+- The rule with the least functions count will be choosed. ( there's a plan to add readability  to select the rule, check issue #4 for updates ).
+
+# Which rules are supported ?
+
+Currently all rules on this page are supported except: 
+
+    - Memory rules: X, 4, 6, M
+    - Reject plains rules
+    - E
 
 # Usage
 
@@ -12,4 +30,4 @@ Each rule change is mapped, and a uniq id is generated for each rule with functi
 
 Example: `perl duprule.pl < /tmp/rockyou.rule`
 
-Will print uniq, without order, rules to STDOUT. And save duplicate rules to `duplicates.txt`.
+Will print unique, non ordered, rules to STDOUT. And save duplicate rules to `duplicates.txt`.
