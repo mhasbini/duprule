@@ -28,7 +28,7 @@ sub duprule {
 	foreach my $rule (@rules) {
 		print "-> processing $rule ... \n" if $self->{verbose};
 		my ($temp, $fcount) = $engine->proccess($rule);
-		$results{$rule} = {'hash' => $util->generate_id($temp), 'fcount' => $fcount} unless $temp eq "RULE_IS_NOT_SUPPORTED";
+		$results{$rule} = {'hash' => $util->generate_id($temp), 'fcount' => $fcount};
 	}
 
 	my %reverse;
