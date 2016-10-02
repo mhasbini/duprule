@@ -164,9 +164,9 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
-			$this->{status}->{pos}{$largest_pos + 1}->{value} = $char;
+			$this->{status}->{pos}{$largest_pos + 1}->{value} = lc($char);
 			$this->{status}->{pos}{$largest_pos + 1}->{element} = -1;
-			$this->{status}->{pos}{$largest_pos + 1}->{case} = 'd';
+			$this->{status}->{pos}{$largest_pos + 1}->{case} = &get_case( $char );
 			$this->{status}->{pos}{$largest_pos + 1}->{bitwize_shift} = 0;
 			$this->{status}->{pos}{$largest_pos + 1}->{ascii_shift} = 0;
 			return \@rule_ref;
@@ -180,9 +180,9 @@ sub new {
 			for (reverse 0 .. $largest_pos)	{
 				$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
 			}
-			$this->{status}->{pos}{0}->{value} = $char;
+			$this->{status}->{pos}{0}->{value} = lc($char);
 			$this->{status}->{pos}{0}->{element} = -1;
-			$this->{status}->{pos}{0}->{case} = 'd';
+			$this->{status}->{pos}{0}->{case} = &get_case( $char );
 			$this->{status}->{pos}{0}->{bitwize_shift} = 0;
 			$this->{status}->{pos}{0}->{ascii_shift} = 0;
 			return \@rule_ref;
@@ -263,9 +263,9 @@ sub new {
 				$this->{status}->{pos}{$_ + 1} = delete $this->{status}->{pos}{$_};
 			}
 			if($n <= $largest_pos + 1) {
-				$this->{status}->{pos}{$n}->{value} = $char;
+				$this->{status}->{pos}{$n}->{value} = lc($char);
 				$this->{status}->{pos}{$n}->{element} = -1;
-				$this->{status}->{pos}{$n}->{case} = 'd';
+				$this->{status}->{pos}{$n}->{case} = &get_case( $char );
 				$this->{status}->{pos}{$n}->{bitwize_shift} = 0;
 				$this->{status}->{pos}{$n}->{ascii_shift} = 0;
 			}
@@ -278,9 +278,9 @@ sub new {
 			splice( @rule_ref, 0, 3 );
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
 			if(exists($this->{status}->{pos}{$n})) {
-				$this->{status}->{pos}{$n}->{value} = $char;
+				$this->{status}->{pos}{$n}->{value} = lc($char);
 				$this->{status}->{pos}{$n}->{element} = -1;
-				$this->{status}->{pos}{$n}->{case} = 'd';
+				$this->{status}->{pos}{$n}->{case} = &get_case( $char );
 				$this->{status}->{pos}{$n}->{bitwize_shift} = 0;
 				$this->{status}->{pos}{$n}->{ascii_shift} = 0;
 			}
@@ -310,7 +310,7 @@ sub new {
 					if ($this->{status}->{pos}{$_}->{value} eq $char) {
 						$this->{status}->{pos}{$_}->{value} = $replaced_char;
 						$this->{status}->{pos}{$_}->{element} = -1;
-						$this->{status}->{pos}{$_}->{case} = 'd';
+						$this->{status}->{pos}{$_}->{case} = &get_case( $replaced_char );
 						$this->{status}->{pos}{$_}->{bitwize_shift} = 0;
 						$this->{status}->{pos}{$_}->{ascii_shift} = 0;
 					}
@@ -581,6 +581,11 @@ sub largest_pos {
 		$max = $keys[$key] if $keys[$key] > $max;
 	}
 	return $max;
+}
+
+sub get_case {
+	my $char = shift; # length = 1
+	return lc($char) eq $char ? 'l' : 'u';
 }
 
 1;
