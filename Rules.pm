@@ -540,7 +540,6 @@ sub proccess {
 	my $self = shift;
 	my $rule = shift;
 	my @return;
-	my $not_supported_rule;
 	my $rule_functions_count;
 	my $i = 0;
 	foreach my $magic (0 .. $self->{magic}) {
@@ -555,13 +554,8 @@ sub proccess {
 		$self->{last_element} = $magic + 1; # used when inserting new elements to keep counting.
 		# finish initialization
 		my $rule_ref = [ split '', $rule ];
-		$not_supported_rule = 0;
 		while (1) {
 			last if !@{$rule_ref}[0];
-			if(!exists($self->{rules}->{ @{$rule_ref}[0] })) {
-				$not_supported_rule = 1;
-				last;
-			}
 			print "Executing @{$rule_ref}[0]: \n" if $self->{verbose};
 			$rule_ref =	$self->{rules}->{ @{$rule_ref}[0] }->( $rule_ref );
 			$rule_functions_count++;
@@ -570,11 +564,7 @@ sub proccess {
 		$return[$i++] = $self->{status};
 		$self->{status} = undef;
 	}
-	if($not_supported_rule == 1) {
-		return "RULE_IS_NOT_SUPPORTED";
-	} else {
-		return wantarray() ? (\@return, $rule_functions_count) : \@return;
-	}
+	return wantarray() ? (\@return, $rule_functions_count) : \@return;
 };
 
 sub to_pos {
