@@ -40,7 +40,7 @@ sub generate_id {
 sub is_supported {
 	my $self = shift;
 	my $rule = shift;
-	my $validate_regex = q!\*[0-9A-Z][0-9A-Z]|x[0-9A-Z][0-9A-Z]|i[0-9A-Z].|O[0-9A-Z][0-9A-Z]|o[0-9A-Z][0-9A-Z]|s..|L[0-9A-Z]|R[0-9A-Z]|\+[0-9A-Z]|-[0-9A-Z]|\.[0-9A-Z]|,[0-9A-Z]|y[0-9A-Z]|Y[0-9A-Z]|T[0-9A-Z]|p[0-9A-Z]|D[0-9A-Z]|'[0-9A-Z]|z[0-9A-Z]|Z[0-9A-Z]|\$.|\^.|\@.|:|l|u|c|C|t|r|d|f|{|}|\[|\]|q|k|K|\s!;
+	my $validate_regex = q!\*[0-9A-Za-z][0-9A-Za-z]|x[0-9A-Za-z][0-9A-Za-z]|i[0-9A-Za-z].|O[0-9A-Za-z][0-9A-Za-z]|o[0-9A-Za-z][0-9A-Za-z]|s..|L[0-9A-Za-z]|R[0-9A-Za-z]|\+[0-9A-Za-z]|-[0-9A-Za-z]|\.[0-9A-Za-z]|,[0-9A-Za-z]|y[0-9A-Za-z]|Y[0-9A-Za-z]|T[0-9A-Za-z]|p[0-9A-Za-z]|D[0-9A-Za-z]|'[0-9A-Za-z]|z[0-9A-Za-z]|Z[0-9A-Za-z]|\$.|\^.|\@.|:|l|u|c|C|t|r|d|f|{|}|\[|\]|q|k|K|\s!;
 	$rule =~ s/$validate_regex//g;
 	return length($rule) == 0 ? 1 : 0;
 }
