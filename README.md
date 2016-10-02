@@ -26,8 +26,10 @@ Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_bas
 
 # Usage
 
-`git clone https://github.com/0xbsec/duprule.git`
-`perl duprule/duprule.pl < [rule file]`
+```
+git clone https://github.com/0xbsec/duprule.git
+perl duprule/duprule.pl < [rule file]
+```
 
 `duprule.pl` take input rules from STDIN.
 
