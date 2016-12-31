@@ -1,7 +1,7 @@
 use Test::More;
 use Data::Dumper;
 use FindBin;
-use lib "$FindBin::Bin/../";
+use lib "$FindBin::Bin/../lib/";
 
 require_ok DupRules;
 

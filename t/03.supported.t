@@ -1,6 +1,6 @@
 use Test::More;
 use FindBin;
-use lib "$FindBin::Bin/../";
+use lib "$FindBin::Bin/../lib/";
 
 require_ok Utils;
 
