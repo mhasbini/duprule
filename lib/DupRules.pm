@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Rules;
 use Utils;
-use List::Util;
+use List::Util qw(uniq);
 use Data::Dumper;
 
 sub new {
@@ -35,13 +35,16 @@ sub duprule {
 	my @return;
 	my @duplicate;
 	my @all_duplicates;
+	my @holder;
 
-	while( my( $rule, $value ) = each %results ){
+	foreach my $rule (@rules) {
+		my $value = $results{$rule};
 		push @{$reverse{$value->{'hash'}}}, [$rule, $value->{'fcount'}];
+		push @holder, $value->{'hash'};
 	}
 
 	undef %results; # free memory
-	foreach my $hash (keys %reverse) {
+	foreach my $hash (uniq @holder) {
 		if(scalar(@{$reverse{$hash}}) > 1) { # if more then 1 rule have same hash
 			my @context = @{$reverse{$hash}};
 			# get rule with minimum fuctions
@@ -59,9 +62,7 @@ sub duprule {
 			push @all_duplicates, [@duplicate];
 			undef @duplicate;
 			push @return, $context[$fcount_min_index][0];
-			# print $context[$fcount_min_index][0], "\n";
 		}else{
-			# print $reverse{$hash}->[0]->[0], "\n";
 			push @return, $reverse{$hash}->[0]->[0];
 		}
 	}

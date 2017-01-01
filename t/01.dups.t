@@ -2,6 +2,7 @@ use Test::More;
 use Data::Dumper;
 use FindBin;
 use lib "$FindBin::Bin/../lib/";
+use List::Util qw(uniq);
 
 require_ok Rules;
 require_ok Utils;
@@ -56,8 +57,3 @@ foreach my $pair (@not_ok_pairs) {
 }
 
 done_testing();
-
-sub uniq {
-    my %seen;
-    grep !$seen{$_}++, @_;
-}
