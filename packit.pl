@@ -1,3 +1,4 @@
+# pack duprule.pl from lib/* and main.pl
 use Data::Dumper;
 
 our @libs = glob 'lib/*.pm';
