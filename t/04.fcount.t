@@ -16,3 +16,5 @@ foreach my $pair (@data) {
   ($__, $fcount) = $engine->proccess($rule);
   is($fcount, $ecount, "count for $rule");
 }
+
+done_testing();

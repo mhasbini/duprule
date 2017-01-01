@@ -37,7 +37,7 @@ sub duprule {
 	my @all_duplicates;
 	my @holder;
 
-	foreach my $rule (@rules) {
+	foreach my $rule (uniq @rules) {
 		my $value = $results{$rule};
 		push @{$reverse{$value->{'hash'}}}, [$rule, $value->{'fcount'}];
 		push @holder, $value->{'hash'};
