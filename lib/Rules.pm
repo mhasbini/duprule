@@ -29,6 +29,7 @@ sub new {
 	' '	=> sub {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
+			$this->{function_count}--;
 			return \@rule_ref;
 		},
 	'l' => sub {
@@ -540,10 +541,9 @@ sub proccess {
 	my $self = shift;
 	my $rule = shift;
 	my @return;
-	my $rule_functions_count;
 	my $i = 0;
 	foreach my $magic (0 .. $self->{magic}) {
-		$rule_functions_count = 0;
+		$self->{function_count} = 0;
 		# initialize
 		$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. $magic;
 		$self->{status}->{pos}{$_}->{element} = $_ + 1 for 0 .. $magic;
@@ -558,13 +558,13 @@ sub proccess {
 			last if !@{$rule_ref}[0];
 			print "Executing @{$rule_ref}[0]: \n" if $self->{verbose};
 			$rule_ref =	$self->{rules}->{ @{$rule_ref}[0] }->( $rule_ref );
-			$rule_functions_count++;
+			$self->{function_count}++;
 			print Dumper $self->{status} if $self->{verbose};
 		}
 		$return[$i++] = $self->{status};
 		$self->{status} = undef;
 	}
-	return wantarray() ? (\@return, $rule_functions_count) : \@return;
+	return wantarray() ? (\@return, $self->{function_count}) : \@return;
 };
 
 sub to_pos {
