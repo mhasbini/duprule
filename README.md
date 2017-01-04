@@ -2,6 +2,10 @@
 
 ![](https://travis-ci.org/0xbsec/duprule.svg?branch=master)
 
+# Why ?
+
+To remove duplicate rules 
+
 # How does it works ?
 
 TL;DR: Each rule change is mapped, and a unique id is generated for each rule with functions count.
@@ -18,7 +22,7 @@ The mechanism is like this:
 
 # Which rules are supported ?
 
-Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_based_attack) are supported except: 
+Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_based_attack) are supported except:
 
     - Memory rules: X, 4, 6, M
     - Reject plains rules
