@@ -4,7 +4,7 @@
 
 # Why ?
 
-To remove duplicate rules 
+To remove duplicate rules. 
 
 # How does it works ?
 
