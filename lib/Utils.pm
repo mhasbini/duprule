@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Digest::MD5 qw/md5_hex/;
+use utf8;
+use Encode;
 
 sub new {
 	my $class = shift;
@@ -34,7 +36,7 @@ sub generate_id {
 			}
 		}
 	}
-	return md5_hex($str);
+	return md5_hex(utf8::is_utf8($str) ? Encode::encode_utf8($str) : $str);
 }
 
 sub is_supported {
