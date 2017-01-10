@@ -33,7 +33,7 @@ Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_bas
 ```
 Usage: perl duprule.pl [options] < input_rules > uniq_rules
 	options:
-		-o	 optional	 file to write duplicate rules in
+		-o	 optional	 file to write duplicate rules to
 		-h	 optional	 print this help message
 ```
 

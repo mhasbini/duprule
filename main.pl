@@ -12,7 +12,7 @@ getopts('oh', \%args);
 if (defined $args{h}) {
 	print qq{Usage: perl $0 [options] < input_rules > uniq_rules
 	options:
-		-o\t optional\t file to write duplicate rules in
+		-o\t optional\t file to write duplicate rules to
 		-h\t optional\t print this help message};
 	exit 0;
 }
