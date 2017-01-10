@@ -36,10 +36,11 @@ my ($uniq, $duplicates) = $DupRules->duprule(\@rules);
 
 if (defined $args{o}) {
 	open my $out, '>', $args{o} or die $!;
+	flock $out, 2; # lock file
 	foreach my $dup (@{$duplicates}) {
 		print $out join(', ', @{$dup}), "\n";
 	}
-	close $out;
+	close $out; # unlock and close
 }
 
 foreach my $rule (@{$uniq}) {
