@@ -4,7 +4,7 @@
 
 # Why ?
 
-To remove duplicate rules. 
+Remove duplicate rules.
 
 # How does it works ?
 
@@ -31,12 +31,16 @@ Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_bas
 # Usage
 
 ```
-git clone https://github.com/0xbsec/duprule.git
-perl duprule/duprule.pl < [rule file]
+Usage: perl duprule.pl [options] < input_rules > uniq_rules
+	options:
+		-o	 optional	 file to write duplicate rules in
+		-h	 optional	 print this help message
 ```
 
-`duprule.pl` take input rules from STDIN.
+`duprule.pl` read input rules from STDIN and write uniq or unsupported rules to STDOUT.
+If `-o` option is defined then save duplicate rules to the provided file.
 
-Example: `perl duprule.pl < /tmp/rockyou.rule`
-
-Will print unique, non ordered, rules to STDOUT. And save duplicate rules to `duplicates.txt`.
+Use cases:
+  - `perl duprule.pl < rockyou.rule > rockyou.rule.uniq`
+  - `perl duprule.pl -o duplicates.txt < rockyou.rule > rockyou.rule.uniq`
+  - `perl duprule.pl -h`
