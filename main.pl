@@ -7,7 +7,7 @@ use Utils;
 use Getopt::Std;
 
 my %args;
-getopts('oh', \%args);
+getopts('o:h', \%args);
 
 if (defined $args{h}) {
 	print qq{Usage: perl $0 [options] < input_rules > uniq_rules
