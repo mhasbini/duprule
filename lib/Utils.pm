@@ -23,16 +23,35 @@ sub generate_id {
 		my %pos = %{ $status->{pos} };
 		foreach my $pos (sort {$a <=> $b} keys %pos) {
 			$str .= $pos;
-			$str .= $pos{$pos}->{ascii_shift};
-			$str .= $pos{$pos}->{bitwize_shift};
+			$str .= $pos{$pos}->{ascii_shift}{'l'};
+			$str .= $pos{$pos}->{ascii_shift}{'u'};
+			$str .= $pos{$pos}->{ascii_shift}{'d'};
+			$str .= $pos{$pos}->{bitwize_shift}{'l'};
+			$str .= $pos{$pos}->{bitwize_shift}->{'u'};
+			$str .= $pos{$pos}->{bitwize_shift}->{'d'};
 			$str .= $pos{$pos}->{case};
 			$str .= $pos{$pos}->{element};
 			$str .= $pos{$pos}->{value};
 		}
+		if(defined $status->{deleted_chars}) {
+			foreach my $key (sort keys %{$status->{deleted_chars}}) {
+				$str .= "deleted_key:$key";
+			}
+		}
 		if (defined $status->{substitution}) {
 			my %substitution = %{ $status->{substitution} };
 			foreach my $key (sort keys %substitution) {
-				$str .= $key.$substitution{$key};
+				$str .= $key.$substitution{$key}{'c'};
+				foreach my $s_key (qw/ascii_shift bitwize_shift/) {
+					foreach my $n (sort {$a <=> $b} keys %{$substitution{$key}{$s_key}}) {
+						$str .= $substitution{$key}{$s_key}{$n}{'l'};
+						$str .= $substitution{$key}{$s_key}{$n}{'u'};
+						$str .= $substitution{$key}{$s_key}{$n}{'d'};
+					}
+				}
+				foreach my $n (sort {$a <=> $b} keys %{$substitution{$key}{'case'}}) {
+					$str .= $substitution{$key}{'case'}{$n};
+				}
 			}
 		}
 	}
