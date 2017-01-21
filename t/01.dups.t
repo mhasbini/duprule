@@ -42,7 +42,8 @@ my @diff = (
 	['+1 c', '+2 -1 c'], ['+1', '+2 -1'], ['sab R3', 'R3 sab'], ['sab L3', 'L3 sab'],
 	['sab +3', '+3 sab'], ['sab -3', '-3 sab'], ['c sl1 T5', 'c T5 sl1', 'c so0 T6', 'c T6 so0'],
 	['i4b +5 l', 'i4b l +5'], ['R0 +3 t', 'R0 t +3'], ['i1c R1 sab', 'sab R1 i1c'], ['i1c R1 s12', 's12 i1c R1'],
-	['^b -5 s9l', '^b s9l -5'], ['i5E +6 c', 'i5E c +6'], ['R0sab', 'sabR0'], ['lsab', 'sabl', 'saBl'], ['usAb', 'sAbu'], ['csab', 'sabc'], ['i1asab', 'sabi1a'], ['o0a sab', 'sab o0a'], ['R1@a', '@aR1'], ['@asab^a', '@a^asab'], ['l@a', '@al']
+	['^b -5 s9l', '^b s9l -5'], ['i5E +6 c', 'i5E c +6'], ['R0sab', 'sabR0'], ['lsab', 'sabl', 'saBl'], ['usAb', 'sAbu'], ['csab', 'sabc'], ['i1asab', 'sabi1a'], ['o0a sab', 'sab o0a'], ['R1@a', '@aR1'], ['@asab^a', '@a^asab'], ['l@a', '@al'],
+	['t', 't+2', 't+3', 't+6', 't+8', 't+9', 't-3', 't-6-1', 't-A', 'tL4', 'tR0'], ['tZ3', 'tZ3+8'], ['tz2', 'tz2L2']
 );
 
 foreach my $pair (@dups) {

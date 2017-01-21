@@ -235,11 +235,15 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
+			if (exists $this->{status}->{deleted_chars}{$char}) {
+				delete $this->{status}->{deleted_chars}{$char};
+			}
 			$this->{status}->{pos}{$largest_pos + 1}->{value} = lc($char);
 			$this->{status}->{pos}{$largest_pos + 1}->{element} = -1;
 			$this->{status}->{pos}{$largest_pos + 1}->{case} = &get_case( $char );
-			$this->{status}->{pos}{$largest_pos + 1}->{bitwize_shift} = 0;
-			$this->{status}->{pos}{$largest_pos + 1}->{ascii_shift} = 0;
+			$this->{status}->{pos}{$largest_pos + 1}->{bitwize_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+			$this->{status}->{pos}{$largest_pos + 1}->{ascii_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+
 			return \@rule_ref;
 		},
 	'^' => sub {
@@ -248,14 +252,17 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
+			if (exists $this->{status}->{deleted_chars}{$char}) {
+				delete $this->{status}->{deleted_chars}{$char};
+			}
 			for (reverse 0 .. $largest_pos)	{
 				$this->{status}->{pos}{$_ + 1} = dclone $this->{status}->{pos}{$_};
 			}
 			$this->{status}->{pos}{0}->{value} = lc($char);
 			$this->{status}->{pos}{0}->{element} = -1;
 			$this->{status}->{pos}{0}->{case} = &get_case( $char );
-			$this->{status}->{pos}{0}->{bitwize_shift} = 0;
-			$this->{status}->{pos}{0}->{ascii_shift} = 0;
+			$this->{status}->{pos}{0}->{bitwize_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+			$this->{status}->{pos}{0}->{ascii_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
 			return \@rule_ref;
 		},
 	'[' => sub {
@@ -329,6 +336,9 @@ sub new {
 			splice( @rule_ref, 0, 3 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if ($largest_pos == -1 || $n > $largest_pos);
+			if (exists $this->{status}->{deleted_chars}{$char}) {
+				delete $this->{status}->{deleted_chars}{$char};
+			}
 			# forwarding positions by 1
  			for (reverse $n .. $largest_pos) {
 				$this->{status}->{pos}{$_ + 1} = delete $this->{status}->{pos}{$_};
@@ -336,8 +346,8 @@ sub new {
 			$this->{status}->{pos}{$n}->{value} = lc($char);
 			$this->{status}->{pos}{$n}->{element} = -1;
 			$this->{status}->{pos}{$n}->{case} = &get_case( $char );
-			$this->{status}->{pos}{$n}->{bitwize_shift} = 0;
-			$this->{status}->{pos}{$n}->{ascii_shift} = 0;
+			$this->{status}->{pos}{$n}->{bitwize_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+			$this->{status}->{pos}{$n}->{ascii_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
 			return \@rule_ref;
 		},
 	'o' => sub {
@@ -346,12 +356,15 @@ sub new {
 			my $char = $rule_ref[2];
 			splice( @rule_ref, 0, 3 );
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
+			if (exists $this->{status}->{deleted_chars}{$char}) {
+				delete $this->{status}->{deleted_chars}{$char};
+			}
 			if(exists($this->{status}->{pos}{$n})) {
 				$this->{status}->{pos}{$n}->{value} = lc($char);
 				$this->{status}->{pos}{$n}->{element} = -1;
 				$this->{status}->{pos}{$n}->{case} = &get_case( $char );
-				$this->{status}->{pos}{$n}->{bitwize_shift} = 0;
-				$this->{status}->{pos}{$n}->{ascii_shift} = 0;
+				$this->{status}->{pos}{$n}->{bitwize_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+				$this->{status}->{pos}{$n}->{ascii_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
 			}
 			return \@rule_ref;
 		},
@@ -361,27 +374,61 @@ sub new {
 			splice( @rule_ref, 0, 2 );
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
-			delete $this->{status}->{pos}{$_} for $n .. $largest_pos; # delete range $n -> last
+			# delete range $n -> last
+			foreach my $pos ($n .. $largest_pos) {
+				delete $this->{status}->{pos}{$pos};
+			}
+			# delete position in substitution
+			foreach my $char (keys %{$this->{status}->{substitution}}) {
+				foreach my $pos ($n .. $largest_pos) {
+					delete $this->{status}->{substitution}{$char}{ascii_shift}{$pos};
+					delete $this->{status}->{substitution}{$char}{bitwize_shift}{$pos};
+					delete $this->{status}->{substitution}{$char}{case}{$pos};
+				}
+			}
 			return \@rule_ref;
 		},
 	's' => sub {
 			my @rule_ref = @{ shift; };
 			my $char = $rule_ref[1];
 			my $replaced_char = $rule_ref[2];
+			my $replaced_char_case = &get_case( $replaced_char );
 			splice( @rule_ref, 0, 3 );
-			return \@rule_ref if $char eq $replaced_char; # change nothing if trying to replace character by itself
-			return \@rule_ref if defined $this->{status}->{substitution}{$char} && $this->{status}->{substitution}{$char} eq ''; # if a character was deleted before, it shouldn't be replaced because it doesn't exists.
-			$this->{status}->{substitution}{$char} = $replaced_char;
+			# change nothing if trying to replace character by itself
+			return \@rule_ref if $char eq $replaced_char;
+			return \@rule_ref if exists $this->{status}->{deleted_chars}{$char};
+			$this->{status}->{deleted_chars}{$char} = 1;
+			# if a character was deleted before, it shouldn't be replaced because it doesn't exists.
+			return \@rule_ref if defined $this->{status}->{substitution}{$char} && $this->{status}->{substitution}{$char} eq '';
+			$this->{status}->{substitution}{$char}{'c'} = $replaced_char;
 			my $largest_pos = &largest_pos( $this->{status}->{pos} );
 			return \@rule_ref if $largest_pos == -1;
 			for (0 .. $largest_pos) {
 				if(exists($this->{status}->{pos}{$_})) {
-					if ($this->{status}->{pos}{$_}->{value} eq $char) {
+					foreach my $key (qw/ascii_shift bitwize_shift/) {
+						if(!($this->{status}->{pos}{$_}->{$key}{'l'} == 0
+							&& $this->{status}->{pos}{$_}->{$key}{'d'} == 0
+							&& $this->{status}->{pos}{$_}->{$key}{'u'} == 0)){
+							$this->{status}->{substitution}{$char}{$key}{$_} = {
+								'l' => $this->{status}->{pos}{$_}->{$key}{'l'},
+								'd' => $this->{status}->{pos}{$_}->{$key}{'d'},
+								'u' => $this->{status}->{pos}{$_}->{$key}{'u'}
+							};
+						}
+					}
+					if($this->{status}->{pos}{$_}->{case} ne 'd' && $this->{status}->{pos}{$_}->{value} eq '') {
+						$this->{status}->{substitution}{$char}{'case'}{$_} = $this->{status}->{pos}{$_}->{case};
+					}
+					if ($this->{status}->{pos}{$_}->{value} eq $char && $this->{status}->{pos}{$_}->{case} eq $replaced_char_case &&
+					($this->{status}->{pos}{$_}->{bitwize_shift}{'l'} == 0 && $this->{status}->{pos}{$_}->{bitwize_shift}{'d'} == 0 &&
+					$this->{status}->{pos}{$_}->{bitwize_shift}{'u'} == 0 && $this->{status}->{pos}{$_}->{ascii_shift}{'l'} == 0 &&
+					$this->{status}->{pos}{$_}->{ascii_shift}{'d'} == 0 && $this->{status}->{pos}{$_}->{ascii_shift}{'u'} == 0)) {
 						$this->{status}->{pos}{$_}->{value} = $replaced_char;
 						$this->{status}->{pos}{$_}->{element} = -1;
-						$this->{status}->{pos}{$_}->{case} = &get_case( $replaced_char );
-						$this->{status}->{pos}{$_}->{bitwize_shift} = 0;
-						$this->{status}->{pos}{$_}->{ascii_shift} = 0;
+						$this->{status}->{pos}{$_}->{case} = $replaced_char_case;
+						$this->{status}->{pos}{$_}->{bitwize_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+						$this->{status}->{pos}{$_}->{ascii_shift} = {'l' => 0, 'd' => 0, 'u' => 0};
+
 					}
 				}
 			}
@@ -391,24 +438,48 @@ sub new {
 				my @rule_ref = @{ shift; };
 				my $char = $rule_ref[1];
 				splice( @rule_ref, 0, 2 );
+				# add to deleted_chars chars
+				if (exists $this->{status}->{deleted_chars}{$char}) {
+					return \@rule_ref;
+				} else {
+					$this->{status}->{deleted_chars}{$char} = 1;
+				}
 				# replace $char with '' ( blank )
 				my $replaced_char = '';
 				# if a character is replaced by $char, it should be replace by ''
 				if(defined $this->{status}->{substitution}) {
 					my $tmp = dclone $this->{status}->{substitution};
 				 	while (my ($key, $replaced_by) = each %{$tmp}) {
-						if($replaced_by eq $char) {
-							$this->{status}->{substitution}{$key} = $replaced_char;
+						if($replaced_by->{'c'} eq $char) {
+							$this->{status}->{substitution}{$key}{'c'} = $replaced_char;
 						}
 					}
 				}
-				$this->{status}->{substitution}{$char} = $replaced_char;
 				my $largest_pos = &largest_pos( $this->{status}->{pos} );
+				$this->{status}->{substitution}{$char}{'c'} = $replaced_char;
+				# delete character if exists
 				return \@rule_ref if $largest_pos == -1;
 				foreach my $pos (0 .. $largest_pos) {
-					if(exists($this->{status}->{pos}{$pos}) && $this->{status}->{pos}{$pos}->{value} eq $char) {
+					if(exists($this->{status}->{pos}{$pos}) &&
+						$this->{status}->{pos}{$pos}->{value} eq $char) {
 						for ($pos + 1 .. $largest_pos) {
 							$this->{status}->{pos}{$_ - 1} = delete $this->{status}->{pos}{$_};
+						}
+					}
+					if(exists($this->{status}->{pos}{$pos})) {
+						foreach my $key (qw/ascii_shift bitwize_shift/) {
+							if(!($this->{status}->{pos}{$pos}->{$key}{'l'} == 0
+								&& $this->{status}->{pos}{$pos}->{$key}{'d'} == 0
+								&& $this->{status}->{pos}{$pos}->{$key}{'u'} == 0)){
+								$this->{status}->{substitution}{$char}{$key}{$pos} = {
+									'l' => $this->{status}->{pos}{$pos}->{$key}{'l'},
+									'd' => $this->{status}->{pos}{$pos}->{$key}{'d'},
+									'u' => $this->{status}->{pos}{$pos}->{$key}{'u'}
+								};
+							}
+						}
+						if($this->{status}->{pos}{$pos}->{case} ne 'd') {
+							$this->{status}->{substitution}{$char}{'case'}{$pos} = $this->{status}->{pos}{$pos}->{case};
 						}
 					}
 				}
@@ -496,7 +567,8 @@ sub new {
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
 			if(exists($this->{status}->{pos}{$n})) {
 				if($this->{status}->{pos}{$n}->{value} eq '') {
-					$this->{status}->{pos}{$n}->{bitwize_shift}++;
+					# $this->{status}->{pos}{$n}->{bitwize_shift}++;
+					$this->{status}->{pos}{$n}->{bitwize_shift}{$this->{status}->{pos}{$n}->{case}}++;
 				} else {
 					$this->{status}->{pos}{$n}->{value} = chr( ord( $this->{status}->{pos}{$n}->{value} ) << 1 );
 				}
@@ -510,9 +582,10 @@ sub new {
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
 			if(exists($this->{status}->{pos}{$n})) {
 				if($this->{status}->{pos}{$n}->{value} eq '') {
-					$this->{status}->{pos}{$n}->{bitwize_shift}--;
+					$this->{status}->{pos}{$n}->{bitwize_shift}{$this->{status}->{pos}{$n}->{case}}--;
 				} else {
 					$this->{status}->{pos}{$n}->{value} = chr( ord( $this->{status}->{pos}{$n}->{value} ) >> 1 );
+					# $this->{status}->{pos}{$n}->{case} = &get_case( $this->{status}->{pos}{$n}->{value} );
 				}
 			}
 			return \@rule_ref;
@@ -524,7 +597,7 @@ sub new {
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
 			if(exists($this->{status}->{pos}{$n})) {
 				if($this->{status}->{pos}{$n}->{value} eq '') {
-					$this->{status}->{pos}{$n}->{ascii_shift}++;
+					$this->{status}->{pos}{$n}->{ascii_shift}{$this->{status}->{pos}{$n}->{case}}++;
 				} else {
 					$this->{status}->{pos}{$n}->{value} = chr( ord( $this->{status}->{pos}{$n}->{value} ) + 1 );
 				}
@@ -538,7 +611,7 @@ sub new {
 			return \@rule_ref if &largest_pos( $this->{status}->{pos} ) == -1;
 			if(exists($this->{status}->{pos}{$n})) {
 				if($this->{status}->{pos}{$n}->{value} eq '') {
-					$this->{status}->{pos}{$n}->{ascii_shift}--;
+					$this->{status}->{pos}{$n}->{ascii_shift}{$this->{status}->{pos}{$n}->{case}}--;
 				} else {
 					$this->{status}->{pos}{$n}->{value} = chr( ord( $this->{status}->{pos}{$n}->{value} ) - 1 );
 				}
@@ -616,9 +689,10 @@ sub proccess {
 		$self->{status}->{pos}{$_}->{case} = 'd' for 0 .. $magic;
 		$self->{status}->{pos}{$_}->{element} = $_ + 1 for 0 .. $magic;
 		$self->{status}->{pos}{$_}->{value} = '' for 0 .. $magic;
-		$self->{status}->{pos}{$_}->{bitwize_shift} = 0 for 0 .. $magic; # left -> + | right -> -
-		$self->{status}->{pos}{$_}->{ascii_shift} = 0 for 0 .. $magic;
+		$self->{status}->{pos}{$_}->{bitwize_shift} = {'l' => 0, 'u' => 0, 'd' => 0} for 0 .. $magic; # left -> + | right -> -
+		$self->{status}->{pos}{$_}->{ascii_shift} = {'l' => 0, 'u' => 0, 'd' => 0} for 0 .. $magic; # left -> + | right -> -
 		# $self->{status}->{substitution};
+		# $this->{status}->{deleted_chars}
 		$self->{last_element} = $magic + 1; # used when inserting new elements to keep counting.
 		# finish initialization
 		my $rule_ref = [ split '', $rule ];
@@ -653,6 +727,7 @@ sub largest_pos {
 
 sub get_case {
 	my $char = shift; # length = 1
+	# return $char =~ /^\p{Uppercase}+$/ ? 'u' : 'l';
 	return lc($char) eq $char ? 'l' : 'u';
 }
 
@@ -682,16 +757,35 @@ sub generate_id {
 		my %pos = %{ $status->{pos} };
 		foreach my $pos (sort {$a <=> $b} keys %pos) {
 			$str .= $pos;
-			$str .= $pos{$pos}->{ascii_shift};
-			$str .= $pos{$pos}->{bitwize_shift};
+			$str .= $pos{$pos}->{ascii_shift}{'l'};
+			$str .= $pos{$pos}->{ascii_shift}{'u'};
+			$str .= $pos{$pos}->{ascii_shift}{'d'};
+			$str .= $pos{$pos}->{bitwize_shift}{'l'};
+			$str .= $pos{$pos}->{bitwize_shift}->{'u'};
+			$str .= $pos{$pos}->{bitwize_shift}->{'d'};
 			$str .= $pos{$pos}->{case};
 			$str .= $pos{$pos}->{element};
 			$str .= $pos{$pos}->{value};
 		}
+		if(defined $status->{deleted_chars}) {
+			foreach my $key (sort keys %{$status->{deleted_chars}}) {
+				$str .= "deleted_key:$key";
+			}
+		}
 		if (defined $status->{substitution}) {
 			my %substitution = %{ $status->{substitution} };
 			foreach my $key (sort keys %substitution) {
-				$str .= $key.$substitution{$key};
+				$str .= $key.$substitution{$key}{'c'};
+				foreach my $s_key (qw/ascii_shift bitwize_shift/) {
+					foreach my $n (sort {$a <=> $b} keys %{$substitution{$key}{$s_key}}) {
+						$str .= $substitution{$key}{$s_key}{$n}{'l'};
+						$str .= $substitution{$key}{$s_key}{$n}{'u'};
+						$str .= $substitution{$key}{$s_key}{$n}{'d'};
+					}
+				}
+				foreach my $n (sort {$a <=> $b} keys %{$substitution{$key}{'case'}}) {
+					$str .= $substitution{$key}{'case'}{$n};
+				}
 			}
 		}
 	}
