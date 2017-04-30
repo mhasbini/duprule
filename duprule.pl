@@ -1,7 +1,7 @@
 package DupRules;
 use strict;
 use warnings;
-use List::Util qw(uniq);
+use List::MoreUtils qw(uniq);
 use Data::Dumper;
 
 sub new {
