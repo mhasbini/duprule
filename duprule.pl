@@ -25,7 +25,7 @@ sub duprule {
 
 	foreach my $rule (@rules) {
 		print "-> processing $rule ... \n" if $self->{verbose};
-		my ($temp, $fcount) = $engine->proccess($rule);
+		my ($temp, $fcount) = $engine->process($rule);
 		$results{$rule} = {'hash' => $util->generate_id($temp), 'fcount' => $fcount};
 	}
 
@@ -139,18 +139,6 @@ sub new {
 			}
 			return \@rule_ref;
 		},
-	'r' => sub {
-			my @rule_ref = @{ shift; };
-			splice( @rule_ref, 0, 1 );
-			my $largest_pos = &largest_pos( $this->{status}->{pos} );
-			return \@rule_ref if $largest_pos == -1;
-			my $temp;
-			for (0 .. $largest_pos) {
-				$temp->{status}->{pos}{$_} = dclone $this->{status}->{pos}{$largest_pos - $_};
-			}
-			$this->{status}->{pos} = dclone $temp->{status}->{pos};
-			return \@rule_ref;
-		},
 	't' => sub {
 			my @rule_ref = @{ shift; };
 			splice( @rule_ref, 0, 1 );
@@ -170,6 +158,18 @@ sub new {
 				my $case = $this->{status}->{pos}{$pos}->{case};
 				$this->{status}->{pos}{$pos}->{case} = $case eq 'd' ? 'b' : $case eq 'b' ? 'd' : $case eq 'l' ? 'u' : 'l';
 			}
+			return \@rule_ref;
+		},
+	'r' => sub {
+			my @rule_ref = @{ shift; };
+			splice( @rule_ref, 0, 1 );
+			my $largest_pos = &largest_pos( $this->{status}->{pos} );
+			return \@rule_ref if $largest_pos == -1;
+			my $temp;
+			for (0 .. $largest_pos) {
+				$temp->{status}->{pos}{$_} = dclone $this->{status}->{pos}{$largest_pos - $_};
+			}
+			$this->{status}->{pos} = dclone $temp->{status}->{pos};
 			return \@rule_ref;
 		},
 	'd' => sub {
@@ -678,7 +678,7 @@ sub new {
 	return $this;
 }
 
-sub proccess {
+sub process {
 	my $self = shift;
 	my $rule = shift;
 	my @return;
@@ -793,10 +793,69 @@ sub generate_id {
 }
 
 sub is_supported {
+    # Keep in same order as hashcat OpenCL/inc_rp.h
 	my $self = shift;
 	my $rule = shift;
-	my $validate_regex = q!\*[0-9A-Za-z][0-9A-Za-z]|x[0-9A-Za-z][0-9A-Za-z]|i[0-9A-Za-z].|O[0-9A-Za-z][0-9A-Za-z]|o[0-9A-Za-z].|s..|L[0-9A-Za-z]|R[0-9A-Za-z]|\+[0-9A-Za-z]|-[0-9A-Za-z]|\.[0-9A-Za-z]|,[0-9A-Za-z]|y[0-9A-Za-z]|Y[0-9A-Za-z]|T[0-9A-Za-z]|p[0-9A-Za-z]|D[0-9A-Za-z]|'[0-9A-Za-z]|z[0-9A-Za-z]|Z[0-9A-Za-z]|\$.|\^.|\@.|:|l|u|c|C|t|r|d|f|{|}|\[|\]|q|k|K|\s!;
-	$rule =~ s/$validate_regex//g;
+	my $validate_regex = q!^$
+        # Rules supported by hashcat, John the Ripper, and PasswordsPro
+        |:
+        |l
+        |u
+        |c
+        |C
+        |t
+        |T[0-9A-Za-z]
+        |r
+        |d
+        |p[0-9A-Za-z]
+        |f
+        |{
+        |}
+        |\$.
+        |\^.
+        |\[
+        |\]
+        |D[0-9A-Za-z]
+        |x[0-9A-Za-z][0-9A-Za-z]
+        |O[0-9A-Za-z][0-9A-Za-z]
+        |i[0-9A-Za-z].
+        |o[0-9A-Za-z].
+        |'[0-9A-Za-z]
+        |s..
+        |\@.
+        # a - not yet supported
+        |z[0-9A-Za-z]
+        |Z[0-9A-Za-z]
+        |q
+        # e - not yet supported
+
+        # < - not yet supported
+        # > - not yet supported
+        # | - not yet supported
+        # / - not yet supported
+        # ( - not yet supported
+        # ) - not yet supported
+        # = - not yet supported
+        # % - not yet supported
+
+        # hashcat "only" - not supported by John the Ripper and/or PasswordsPro
+        |k
+        |K
+        |\*[0-9A-Za-z][0-9A-Za-z]
+        |L[0-9A-Za-z]
+        |R[0-9A-Za-z]
+        |\+[0-9A-Za-z]
+        |-[0-9A-Za-z]
+        |\.[0-9A-Za-z]
+        |,[0-9A-Za-z]
+        |y[0-9A-Za-z]
+        |Y[0-9A-Za-z]
+        # E - not yet supported
+        |\s
+
+        !;
+
+	$rule =~ s/$validate_regex//gx;
 	return length($rule) == 0 ? 1 : 0;
 }
 
