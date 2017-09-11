@@ -1,0 +1,16 @@
+[package]
+authors = ["mhasbini <mohammad.hasbini@gmail.com>"]
+name = "duprule"
+version = "0.1.0"
+
+[[bin]]
+doc = false
+name = "duprule"
+path = "src/bin/main.rs"
+
+[dependencies]
+pretty_assertions = {version = "0.2.1", optional = true}
+
+[lib]
+name = "duprule"
+path = "src/duprule.rs"

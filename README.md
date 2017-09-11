@@ -2,9 +2,9 @@
 
 ![](https://travis-ci.org/0xbsec/duprule.svg?branch=master)
 
-# Why ?
+# What
 
-Remove duplicate rules.
+Remove duplicate Hashcat rules.
 
 # How does it works ?
 
@@ -12,35 +12,47 @@ TL;DR: Each rule change is mapped, and a unique id is generated for each rule wi
 
 The mechanism is like this:
 
-- A blank map is created with $n ( from 1 to 37 ) default characters.
+- A blank map is created with N ( from 1 to 36 ) slots.
 - Each rule change will be applied to the map.
     Example rule: 'u', will change all characters cases from '?' ( unknown ) to 'u' ( upper case ).
     'sab', will add {'a' -> 'b'} to the map. And same logic apply for the other rules.
 - An id is generated from the map.
 - The ids are compared to detect duplicate rules.
-- The rule with the least functions count will be choosed. ( there's a plan to add readability  to select the rule, check issue #4 for updates ).
+- The rule with the least functions count will be selected.
 
 # Which rules are supported ?
 
-Currently all rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_based_attack) are supported except:
+All rules on [this page](https://hashcat.net/wiki/doku.php?id=rule_based_attack) are supported except:
 
     - Memory rules: X, 4, 6, M
     - Reject plains rules
-    - E
+    - L, R, +, -
+    - E, e
 
 # Usage
 
 ```
-Usage: perl duprule.pl [options] < input_rules > uniq_rules
-	options:
-		-o	 optional	 file to write duplicate rules to
-		-h	 optional	 print this help message
+Remove duplicate Hashcat rules.
+
+Usage:
+    duprule [options] < input
+
+
+Reads input from STDIN and prints to STDOUT.
+
+Options:
+    -o, --output      optional	 file to write duplicate rules to
+    -v, --version     optional	 print version info
+    -h, --help        optional	 print this help message
+    -s, --supported   optional	 list all supported rules
+
+Examples:
+
+duprule < rockyou.rule > rockyou.rule.uniq
+duprule -o duplicates.txt < rockyou.rule > rockyou.rule.uniq
 ```
 
-`duprule.pl` read input rules from STDIN and write uniq or unsupported rules to STDOUT.
-If `-o` option is defined then save duplicate rules to the provided file.
+# Installation
 
-Use cases:
-  - `perl duprule.pl < rockyou.rule > rockyou.rule.uniq`
-  - `perl duprule.pl -o duplicates.txt < rockyou.rule > rockyou.rule.uniq`
-  - `perl duprule.pl -h`
+duprule is written in Rust.
+// TODO: update installation steps

@@ -1,17 +1,4 @@
-language: perl
+language: rust
 
-perl:
-- '5.18'
-
-install:
-- cpanm --quiet --notest
-  Devel::Cover::Report::Coveralls
-  List::Util
-
-script:
-- PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine
-  prove -lv t/
-- cover
-
-after_success:
-- cover -report coveralls
+rust:
+  - stable
