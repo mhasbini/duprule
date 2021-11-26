@@ -30,12 +30,12 @@ impl DupRule {
             let raw_rule = raw_rule.unwrap();
 
             match Rule::parse(&raw_rule) {
-                Err(_) => write!(stream, "{}", raw_rule).unwrap(),
+                Err(_) => writeln!(stream, "{}", raw_rule).unwrap(),
                 Ok(rule) => {
                     let key = Rule::hash(rule);
 
                     if !checked.contains_key(&key) {
-                        write!(stream, "{}", raw_rule).unwrap();
+                        writeln!(stream, "{}", raw_rule).unwrap();
                         checked.insert(key, ());
                     }
                 }
@@ -54,7 +54,7 @@ impl DupRule {
             let raw_rule = raw_rule.unwrap();
 
             match Rule::parse(&raw_rule) {
-                Err(_) => write!(stream, "{}", raw_rule).unwrap(),
+                Err(_) => writeln!(stream, "{}", raw_rule).unwrap(),
                 Ok(rule) => {
                     let key = Rule::hash(rule);
 
@@ -62,7 +62,7 @@ impl DupRule {
                         let dups = checked.get_mut(&key).unwrap();
                         dups.1.push(raw_rule);
                     } else {
-                        write!(stream, "{}", raw_rule).unwrap();
+                        writeln!(stream, "{}", raw_rule).unwrap();
                         checked.insert(key, (raw_rule, Vec::new()));
                     }
                 }
