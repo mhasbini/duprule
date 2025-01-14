@@ -55,4 +55,9 @@ duprule -o duplicates.txt < rockyou.rule > rockyou.rule.uniq
 # Installation
 
 duprule is written in Rust.
-// TODO: update installation steps
+
+```
+# run dev after clonning:
+cargo run < input.rule
+cargo run < input.rule -- -o duplicates.txt
+```
