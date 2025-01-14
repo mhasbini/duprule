@@ -79,31 +79,38 @@ pub struct Rule {
 }
 
 macro_rules! push_next {
-    ($it:ident, $ast:ident, $fn:path) => ({
+    ($it:ident, $ast:ident, $fn:path) => {{
         $it.next();
         $ast.push($fn);
-    })
+    }};
 }
 
 macro_rules! push_next_num {
-    ($it:ident, $ast:ident, $fn:path) => ({
+    ($it:ident, $ast:ident, $fn:path) => {{
         $it.next();
         match $it.peek() {
-            None => return Err(format!("Missing argument for {:?} function", stringify!($fn))),
-            Some(_) =>
-                match Num::conv($it.next().unwrap()) {
-                    Ok(pos) => $ast.push($fn(pos)),
-                    Err(e) => return Err(e)
-                }
+            None => {
+                return Err(format!(
+                    "Missing argument for {:?} function",
+                    stringify!($fn)
+                ))
+            }
+            Some(_) => match Num::conv($it.next().unwrap()) {
+                Ok(pos) => $ast.push($fn(pos)),
+                Err(e) => return Err(e),
+            },
         }
-    })
+    }};
 }
 
 macro_rules! push_next_num_num {
-    ($it:ident, $ast:ident, $fn:path) => ({
+    ($it:ident, $ast:ident, $fn:path) => {{
         $it.next();
         if $it.peek().is_none() {
-            return Err(format!("Missing position argument for {:?} function", stringify!($fn)));
+            return Err(format!(
+                "Missing position argument for {:?} function",
+                stringify!($fn)
+            ));
         }
         let n1 = Num::conv($it.next().unwrap());
         if let Err(e) = n1 {
@@ -111,7 +118,10 @@ macro_rules! push_next_num_num {
         }
 
         if $it.peek().is_none() {
-            return Err(format!("Missing position argument for {:?} function", stringify!($fn)));
+            return Err(format!(
+                "Missing position argument for {:?} function",
+                stringify!($fn)
+            ));
         }
         let n2 = Num::conv($it.next().unwrap());
         if let Err(e) = n2 {
@@ -119,71 +129,83 @@ macro_rules! push_next_num_num {
         }
 
         $ast.push($fn(n1.unwrap(), n2.unwrap()))
-    })
+    }};
 }
 
 macro_rules! push_next_char {
-    ($it:ident, $ast:ident, $fn:path) => ({
+    ($it:ident, $ast:ident, $fn:path) => {{
         $it.next();
         if $it.peek().is_none() {
-            return Err(format!("Missing argument for {:?} function", stringify!($fn)));
+            return Err(format!(
+                "Missing argument for {:?} function",
+                stringify!($fn)
+            ));
         }
         $ast.push($fn(Char($it.next().unwrap())))
-    })
+    }};
 }
 
 macro_rules! push_next_char_char {
-    ($it:ident, $ast:ident, $fn:path) => ({
+    ($it:ident, $ast:ident, $fn:path) => {{
         $it.next();
         if $it.peek().is_none() {
-            return Err(format!("Missing argument for {:?} function", stringify!($fn)));
+            return Err(format!(
+                "Missing argument for {:?} function",
+                stringify!($fn)
+            ));
         }
         let c0 = $it.next().unwrap();
 
         if $it.peek().is_none() {
-            return Err(format!("Missing argument for {:?} function", stringify!($fn)));
+            return Err(format!(
+                "Missing argument for {:?} function",
+                stringify!($fn)
+            ));
         }
 
         let c1 = $it.next().unwrap();
 
         $ast.push($fn(Char(c0), Char(c1)))
-    })
+    }};
 }
 
-
 macro_rules! push_next_num_char {
-    ($it:ident, $ast:ident, $fn:path) => ({
+    ($it:ident, $ast:ident, $fn:path) => {{
         $it.next();
 
         match $it.peek() {
-            None => return Err(format!("Missing argument for {:?} function", stringify!($fn))),
-            Some(_) =>
-                match Num::conv($it.next().unwrap()) {
-                    Err(e) => return Err(e),
-                    Ok(pos) => {
-                        if $it.peek().is_none() {
-                            return Err(
-                                format!("Missing argument for {:?} function", stringify!($fn))
-                            );
-                        }
-
-                        let c = $it.next().unwrap();
-
-                        $ast.push($fn(pos, Char(c)))
+            None => {
+                return Err(format!(
+                    "Missing argument for {:?} function",
+                    stringify!($fn)
+                ))
+            }
+            Some(_) => match Num::conv($it.next().unwrap()) {
+                Err(e) => return Err(e),
+                Ok(pos) => {
+                    if $it.peek().is_none() {
+                        return Err(format!(
+                            "Missing argument for {:?} function",
+                            stringify!($fn)
+                        ));
                     }
+
+                    let c = $it.next().unwrap();
+
+                    $ast.push($fn(pos, Char(c)))
                 }
+            },
         }
-    })
+    }};
 }
 
 macro_rules! next {
-    ($it:ident) => ({
+    ($it:ident) => {{
         $it.next();
-    })
+    }};
 }
 
 impl Rule {
-
     #[cfg(test)]
     pub fn new(rule: &str) -> Rule {
         match Rule::parse(rule) {
@@ -194,11 +216,13 @@ impl Rule {
 
     pub fn parse(rule: &str) -> Result<Rule, String> {
         match Rule::tokenize(rule) {
-            Ok(ast) => Ok(Rule {
-                ast: ast,
-            }),
+            Ok(ast) => Ok(Rule { ast }),
             Err(e) => Err(e),
         }
+    }
+
+    pub fn function_count(&self) -> usize {
+        self.ast.len()
     }
 
     fn tokenize(rule: &str) -> Result<Vec<RuleFn>, String> {
@@ -263,7 +287,9 @@ impl Rule {
         Ok(ast)
     }
 
-    pub fn eval(rule: Rule) -> Vec<SlotsMap> {
+    /// Evaluate the given rule across all 36 possible slots (IDs).
+    /// This function no longer requires cloning `rule`.
+    pub fn eval(rule: &Rule) -> Vec<SlotsMap> {
         let mut result: Vec<SlotsMap> = Vec::with_capacity(RULE_MAX);
 
         for id in 1..(RULE_MAX + 1) {
@@ -315,8 +341,9 @@ impl Rule {
         result
     }
 
-    // pub fn hash<T: Hash>(t: &T) -> u64 {
-    pub fn hash(rule: Rule) -> u64 {
+    /// Hash the final evaluation of a `Rule` without cloning it.
+    /// We just call `Rule::eval(&rule)` by reference.
+    pub fn hash(rule: &Rule) -> u64 {
         let evaled = Rule::eval(rule);
         Rule::calculate_hash(&evaled)
     }
@@ -326,7 +353,6 @@ impl Rule {
         t.hash(&mut s);
         s.finish()
     }
-
 }
 
 trait Class {
@@ -347,20 +373,23 @@ impl Class for char {
 #[cfg(test)]
 pub mod test {
     use super::Rule;
-
+    /// Macro for asserting that multiple rules produce the **same** final evaluation.
+    /// Changed from `Rule::eval(Rule::new(...))` to `Rule::eval(&Rule::new(...))`.
     #[cfg(test)]
     macro_rules! same {
         ($first:expr, $($next:expr),+) => {
             $({
                 assert_eq!(
-                    Rule::eval(Rule::new($first)),
-                    Rule::eval(Rule::new($next)),
+                    Rule::eval(&Rule::new($first)),
+                    Rule::eval(&Rule::new($next)),
                     "`{}` should eq `{}`", $first, $next
                 );
             })*
         }
     }
 
+    /// Macro for asserting that multiple rules produce **different** final evaluations.
+    /// Changed from `Rule::eval(Rule::new(...))` to `Rule::eval(&Rule::new(...))`.
     #[cfg(test)]
     macro_rules! diff {
         ($lone:expr) => ();
@@ -368,8 +397,8 @@ pub mod test {
             diff!($($next),+);
             $({
                 assert_ne!(
-                    Rule::eval(Rule::new($first)),
-                    Rule::eval(Rule::new($next)),
+                    Rule::eval(&Rule::new($first)),
+                    Rule::eval(&Rule::new($next)),
                     "`{}` should ne `{}`", $first, $next
                 );
             })*
